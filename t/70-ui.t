@@ -45,7 +45,7 @@ my @modules = qw(
 );
 
 my @documents = qw(
-	install.xml
+	install.xml.in
 	strings.txt
 	Makefile
 	README.md
@@ -64,6 +64,8 @@ for my $file (@modules, @documents, 'VERSION') {
 	ok(-f file($file), "file exists: $file");
 }
 
+ok(-x file('build.sh'), 'one-click build.sh exists and is executable');
+
 my $version = slurp(file('VERSION'));
 $version = '' unless defined $version;
 $version =~ s/\s+$//;
@@ -71,14 +73,16 @@ $version =~ s/\s+$//;
 # ---------------------------------------------------------------------------
 # install.xml
 # ---------------------------------------------------------------------------
-my $manifest = slurp(file('install.xml')) // '';
+my $manifest = slurp(file('install.xml.in')) // '';
 
 like($manifest, qr{<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}</id>}i,
 	'install.xml has a UUID id');
 like($manifest, qr{<name>PLUGIN_PLAYVIDEO</name>}, 'install.xml plugin name');
 like($manifest, qr{<module>Plugins::PlayVideo::Plugin</module>}, 'install.xml module');
 like($manifest, qr{<importmodule>Plugins::PlayVideo::Importer</importmodule>}, 'install.xml importmodule');
-like($manifest, qr{<version>\Q$version\E</version>}, 'install.xml version matches VERSION');
+my $rendered = $manifest; $rendered =~ s/\@VERSION\@/$version/g;
+like($manifest, qr{<version>\@VERSION\@</version>}, 'install.xml.in uses the VERSION placeholder');
+like($rendered, qr{<version>\Q$version\E</version>}, 'rendered install.xml version matches VERSION');
 like($manifest, qr{<description>PLUGIN_PLAYVIDEO_DESC</description>}, 'install.xml description token');
 like($manifest, qr{<creator>[^<]+</creator>}, 'install.xml creator');
 like($manifest, qr{<category>tools</category>}, 'install.xml category');
@@ -233,7 +237,7 @@ for my $line (split /\r?\n/, $strings) {
 
 my @tokenSources = @modules;
 push @tokenSources, 'HTML/EN/plugins/PlayVideo/settings.html';
-push @tokenSources, 'install.xml';
+push @tokenSources, 'install.xml.in';
 
 my %used;
 

@@ -48,6 +48,27 @@ apk add --no-cache ffmpeg
 Windows/macOS 请通过常用包管理器安装 FFmpeg，并在插件设置中填写
 `ffmpeg.exe`/`ffprobe.exe` 的完整路径。
 
+## 构建
+
+插件版本只存放在 [VERSION](VERSION) 这一个文件里。在仓库根目录执行一键构建：
+
+```sh
+./build.sh                 # 运行单元测试，生成目录和压缩包
+./build.sh --no-test       # 跳过单元测试
+./build.sh --no-archive    # 只生成 dist/PlayVideo/
+```
+
+脚本会从受版本控制的 `install.xml.in` 模板渲染 `build/install.xml`，并生成：
+
+```
+dist/PlayVideo/                 # 可直接复制到 <LMS>/Plugins/
+dist/PlayVideo-<VERSION>.zip    # LMS 插件管理器压缩包
+dist/PlayVideo-<VERSION>.tar.gz # 通用压缩包
+```
+
+`make dist` 调用同一个脚本。不要手工修改 `install.xml`；需要改版本时只修改
+`VERSION`（必要时再改 `install.xml.in`）。
+
 ## 安装插件
 
 1. 将插件文件夹复制到 LMS 的 `Plugins` 目录下，文件夹名必须**正好**是
@@ -62,12 +83,13 @@ Windows/macOS 请通过常用包管理器安装 FFmpeg，并在插件设置中�
    <LMS>/Plugins/PlayVideo/strings.txt
    ```
 
-   文件夹名决定模块名（`Plugins::PlayVideo`），不要改名为
-   `PlayVideo-0.1.0` 之类的形式。
+   文件夹名决定模块名（`Plugins::PlayVideo`），不要改名（例如改成
+   `PlayVideo-<版本>`）。
 
-   - **Git 检出：** 将仓库复制到 `<LMS>/Plugins/PlayVideo`（只需目录拷贝）。
-     `ref/` 只是未跟踪的测试媒体，不需要复制。
-   - **发布包：** 解压后把 `PlayVideo` 文件夹复制到 `<LMS>/Plugins/`。
+   - **Git 检出：** 在仓库中运行 `./build.sh`，把 `dist/PlayVideo/` 复制到
+     `<LMS>/Plugins/PlayVideo`。`ref/` 只是未跟踪的测试媒体，不需要复制。
+   - **发布包：** 解压 `dist/PlayVideo-<VERSION>.zip`，把其中的 `PlayVideo`
+     文件夹复制到 `<LMS>/Plugins/`。
 
 2. 重启 Lyrion Music Server。
 3. 在 *设置 → 插件* 中确认 PlayVideo 已启用（插件清单默认启用）。

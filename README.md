@@ -59,6 +59,29 @@ apk add --no-cache ffmpeg
 On Windows/macOS install FFmpeg from your usual package manager and enter the
 full paths to `ffmpeg.exe`/`ffprobe.exe` in the plugin settings.
 
+## Building
+
+A single version file, [VERSION](VERSION), is the only place that stores the
+plugin version. Run the one-click build from the repository root:
+
+```sh
+./build.sh                 # run unit tests, build folder + archives
+./build.sh --no-test       # skip unit tests
+./build.sh --no-archive    # only create dist/PlayVideo/
+```
+
+The script renders `build/install.xml` from the tracked `install.xml.in`
+template and creates:
+
+```
+dist/PlayVideo/                 # ready to copy into <LMS>/Plugins/
+dist/PlayVideo-<VERSION>.zip    # LMS plugin-manager archive
+dist/PlayVideo-<VERSION>.tar.gz # portable archive
+```
+
+`make dist` calls the same script. Never edit `install.xml` by hand; change
+`VERSION` (and, if needed, `install.xml.in`) instead.
+
 ## Installation
 
 1. Copy the plugin folder so that it is named **exactly** `PlayVideo` below
@@ -74,13 +97,13 @@ full paths to `ffmpeg.exe`/`ffprobe.exe` in the plugin settings.
    ```
 
    The folder name matters: LMS derives the plugin module (`Plugins::PlayVideo`)
-   from it. Do not rename it to `PlayVideo-0.1.0` or similar.
+   from it. Do not rename it (for example to `PlayVideo-<version>`).
 
-   - **Git checkout:** clone/copy the repository to `<LMS>/Plugins/PlayVideo`
-     (this is not an LMS plugin repository checkout, just a directory copy).
-     The `ref/` test media is untracked and not needed.
-   - **Release archive:** unpack and copy the `PlayVideo` folder into
-     `<LMS>/Plugins/`.
+   - **Git checkout:** run `./build.sh` in the repository and copy
+     `dist/PlayVideo/` to `<LMS>/Plugins/PlayVideo`. The `ref/` test media is
+     untracked and not needed.
+   - **Release archive:** unpack `dist/PlayVideo-<VERSION>.zip` and copy the
+     `PlayVideo` folder into `<LMS>/Plugins/`.
 
 2. Restart Lyrion Music Server.
 3. Enable **PlayVideo** under *Settings → Plugins* if it is not already

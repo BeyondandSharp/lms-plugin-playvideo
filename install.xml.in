@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
+<!-- Template: rendered to build/install.xml from VERSION by build.sh. -->
 <extension>
 	<id>8f13b832-04a9-48fe-9178-5bbc0910b105</id>
 	<name>PLUGIN_PLAYVIDEO</name>
 	<module>Plugins::PlayVideo::Plugin</module>
 	<importmodule>Plugins::PlayVideo::Importer</importmodule>
-	<version>0.1.0</version>
+	<version>@VERSION@</version>
 	<description>PLUGIN_PLAYVIDEO_DESC</description>
 	<creator>Lyrion Music Server PlayVideo contributors</creator>
 	<category>tools</category>

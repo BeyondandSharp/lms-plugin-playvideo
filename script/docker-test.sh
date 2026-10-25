@@ -228,20 +228,20 @@ ensure_player() {
 }
 
 stage_playvideo() {
+    # Build through the official one-click builder so the harness exercises
+    # the same rendered install.xml and file layout that users install.
+    "$ROOT/build.sh" --no-test --no-archive >/dev/null 2>&1 \
+        || { fail "build.sh failed while staging PlayVideo"; return 1; }
     rm -rf "$PLAYVIDEO_STAGE"
     mkdir -p "$PLAYVIDEO_STAGE"
-    local f
-    for f in install.xml lib HTML custom-types.conf custom-convert.conf strings.txt VERSION \
-             README.md README.zh-CN.md LICENSE THIRD_PARTY_NOTICES.md Makefile; do
-        [ -e "$ROOT/$f" ] && cp -a "$ROOT/$f" "$PLAYVIDEO_STAGE/"
-    done
-    find "$PLAYVIDEO_STAGE" -type d -exec chmod 755 {} + 2>/dev/null || true
-    find "$PLAYVIDEO_STAGE" -type f -exec chmod 644 {} + 2>/dev/null || true
+    cp -a "$ROOT/dist/PlayVideo/." "$PLAYVIDEO_STAGE/"
+    find "$PLAYVIDEO_STAGE" -type d -exec chmod 755 {} +
+    find "$PLAYVIDEO_STAGE" -type f -exec chmod 644 {} +
 }
 
 start_container() {
     local version="$1" image="$2"
-    stage_playvideo
+    stage_playvideo || return 1
     rm -rf "$CURRENT_CONFIG"
     mkdir -p "$CURRENT_CONFIG"
     docker rm -f "$CURRENT_CONTAINER" >/dev/null 2>&1 || true
@@ -501,9 +501,15 @@ test_version() {
     remove_plugin TestAc3Broken
 
     # --- optional combined test with lms-plugin-ffmpeg ---
-    if [ -f "$FFMPEG_PLUGIN_DIR/install.xml" ]; then
+    local ffmpeg_src="$FFMPEG_PLUGIN_DIR"
+    if [ -x "$FFMPEG_PLUGIN_DIR/build.sh" ]; then
+        "$FFMPEG_PLUGIN_DIR/build.sh" --no-test --no-archive >/dev/null 2>&1 \
+            || { fail "FFmpeg build.sh failed"; return 1; }
+        ffmpeg_src="$FFMPEG_PLUGIN_DIR/dist/FFmpeg"
+    fi
+    if [ -f "$ffmpeg_src/install.xml" ]; then
         log "LMS $version + lms-plugin-ffmpeg"
-        install_plugin "$FFMPEG_PLUGIN_DIR" FFmpeg || return 1
+        install_plugin "$ffmpeg_src" FFmpeg || return 1
         restart_lms || return 1
         from="$(log_lines)"
         if play_fixture mkv_ac3.mkv; then
@@ -553,7 +559,7 @@ test_version() {
         stop_playback
         remove_plugin FFmpeg
     else
-        info "skip combined FFmpeg plugin test (no install.xml at $FFMPEG_PLUGIN_DIR)"
+        info "skip combined FFmpeg plugin test (no install.xml at $ffmpeg_src)"
     fi
 
     cleanup_player

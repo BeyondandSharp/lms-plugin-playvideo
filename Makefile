@@ -1,14 +1,16 @@
 # PlayVideo - Lyrion Music Server plugin
 #
+#   ./build.sh      one-click release build (recommended)
 #   make            show this help
 #   make test       run the Perl unit tests (prove -l t)
 #   make lint       static UI checks and, when LMS_HOME is set, perl -c
 #   make docker-test  run the LMS 9.0.0/9.1.1 Docker harness
-#   make dist       create dist/PlayVideo/ ready to copy into Plugins/
+#   make dist       create dist/PlayVideo/ + archives (uses build.sh)
 #   make install    install into $(PLUGINS_DIR)/PlayVideo
 #   make clean      remove build/, dist/ and temporary files
 #
-# VERSION is the single source of truth for the plugin version.
+# VERSION is the single source of truth for the plugin version; install.xml
+# is rendered from install.xml.in by build.sh, never edited by hand.
 
 VERSION  ?= $(shell cat VERSION 2>/dev/null | head -n 1)
 LMS_HOME ?=
@@ -16,16 +18,6 @@ DIST     := dist/PlayVideo
 PROVE    ?= prove
 TESTS    ?= t
 LINT_MAIN := build/lint/LintMain.pm
-
-PLUGIN_FILES := \
-	install.xml \
-	custom-types.conf \
-	custom-convert.conf \
-	strings.txt \
-	README.md \
-	README.zh-CN.md \
-	THIRD_PARTY_NOTICES.md \
-	LICENSE
 
 .PHONY: all help test lint docker-test dist install clean verify-dist
 
@@ -101,31 +93,16 @@ docker-test:
 		exit 1; \
 	fi
 
-# Build a self-contained plugin folder.  The folder name must be PlayVideo,
-# otherwise LMS will not find the module.
+# Build a self-contained plugin folder and archives.  All version handling
+# and manifest rendering is done by build.sh from the single VERSION file.
 dist:
-	@for file in $(PLUGIN_FILES); do \
-		if [ ! -f "$$file" ]; then echo "Missing plugin file: $$file" >&2; exit 1; fi; \
-	done
-	@if ! grep -q "<version>$(VERSION)</version>" install.xml; then \
-		echo "install.xml version does not match VERSION ($(VERSION))" >&2; \
-		exit 1; \
-	fi
-	rm -rf "$(DIST)"
-	mkdir -p "$(DIST)"
-	cp -Rp lib HTML "$(DIST)/"
-	cp -p $(PLUGIN_FILES) "$(DIST)/"
-	find "$(DIST)" -type d -exec chmod 755 {} +
-	find "$(DIST)" -type f -exec chmod 644 {} +
-	@echo
-	@echo "Release folder: $(DIST)"
-	@echo "Copy it to <LMS>/Plugins/PlayVideo and restart LMS."
+	./build.sh
 
 verify-dist:
-	@test -d "$(DIST)" || (echo "$(DIST) does not exist; run make dist" >&2; exit 1)
-	@test -f "$(DIST)/install.xml" || (echo "missing install.xml in $(DIST)" >&2; exit 1)
+	@test -f "$(DIST)/install.xml" || (echo "missing $(DIST)/install.xml; run make dist" >&2; exit 1)
 	@test -d "$(DIST)/lib/Plugins/PlayVideo" || (echo "missing lib/Plugins/PlayVideo in $(DIST)" >&2; exit 1)
 	@test -f "$(DIST)/HTML/EN/plugins/PlayVideo/settings.html" || (echo "missing settings.html in $(DIST)" >&2; exit 1)
+	@grep -qF "<version>$$(tr -d '[:space:]' < VERSION)</version>" "$(DIST)/install.xml" || (echo "dist/install.xml version mismatch" >&2; exit 1)
 	@echo "$(DIST) looks complete."
 
 # Install into an existing LMS Plugins directory.  The target directory must
