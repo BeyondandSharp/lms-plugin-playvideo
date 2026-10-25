@@ -19,6 +19,7 @@ Lyrion Music Server（LMS）音乐库。插件会扫描这些文件，使用 `ff
 - 曲目信息菜单中提供 **视频详情** 与 **章节**。章节是跳转快捷方式，不是独立曲目。
 - 可选检测并与伴随项目 `lms-plugin-ffmpeg` 集成。
 - 提供 CLI/JSON-RPC 接口（`playvideo status|info|chapters`）用于诊断和自动化。
+- 界面提供英文与简体中文（`ZH_CN`）字符串。
 
 ## 系统要求
 

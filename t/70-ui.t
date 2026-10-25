@@ -163,6 +163,10 @@ is_deeply(
 
 like($html, qr/PROCESS settings\/header\.html/, 'settings.html includes the settings header');
 like($html, qr/PROCESS settings\/footer\.html/, 'settings.html includes the settings footer');
+like($html, qr/WRAPPER settingSection/, 'settings.html uses settingSection (LMS 9 layout)');
+like($html, qr/WRAPPER settingGroup/, 'settings.html uses settingGroup (LMS 9 layout)');
+like($html, qr/class="prefTable"/, 'status/decoder tables use prefTable');
+unlike($html, qr/WRAPPER setting\s/, 'settings.html does not use the legacy setting wrapper');
 
 for my $pref (@prefs) {
 	like($html, qr/name="pref_\Q$pref\E"/, "settings.html renders pref $pref");
@@ -213,7 +217,7 @@ like($chapters, qr/remote/, 'Chapters.pm rejects remote tracks');
 # ---------------------------------------------------------------------------
 my $strings = slurp(file('strings.txt')) // '';
 
-my (%defined, %seenToken, %en);
+my (%defined, %seenToken, %en, %zh_cn);
 
 my $current;
 for my $line (split /\r?\n/, $strings) {
@@ -228,6 +232,7 @@ for my $line (split /\r?\n/, $strings) {
 
 	if (defined $current && $line =~ /^\t([A-Z_]+)\t(.*)$/) {
 		$en{$current} = 1 if $1 eq 'EN';
+		$zh_cn{$current} = 1 if $1 eq 'ZH_CN';
 		$defined{$current} = 1;
 		next;
 	}
@@ -258,6 +263,11 @@ my @noEnglish = sort grep { $defined{$_} && !$en{$_} } keys %used;
 
 is_deeply(\@noEnglish, [], 'all used tokens have an EN translation')
 	or diag('Tokens without EN: ' . join(', ', @noEnglish));
+
+my @noChinese = sort grep { !$zh_cn{$_} } keys %used;
+
+is_deeply(\@noChinese, [], 'all used tokens have a ZH_CN translation')
+	or diag('Tokens without ZH_CN: ' . join(', ', @noChinese));
 
 my @duplicates = sort grep { $seenToken{$_} > 1 } keys %seenToken;
 

@@ -28,6 +28,7 @@ player. There is no video output, subtitle handling or DRM support.
   the companion `lms-plugin-ffmpeg` plugin.
 - CLI/JSON-RPC API (`playvideo status|info|chapters`) for automation and
   diagnostics.
+- English and Simplified Chinese (`ZH_CN`) UI strings.
 
 ## Requirements
 
