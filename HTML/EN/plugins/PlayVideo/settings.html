@@ -1,0 +1,137 @@
+[% PROCESS settings/header.html %]
+
+	[% WRAPPER setting title="PLUGIN_PLAYVIDEO_SETTINGS" desc="PLUGIN_PLAYVIDEO_SETTINGS_DESC" %]
+		<div class="prefDesc">[% "PLUGIN_PLAYVIDEO_SETTINGS_INTRO" | string %]</div>
+	[% END %]
+
+	[% WRAPPER setting title="PLUGIN_PLAYVIDEO_STATUS" desc="PLUGIN_PLAYVIDEO_STATUS_DESC" %]
+		<table class="prefs">
+			<tr>
+				<td class="prefHead">[% "PLUGIN_PLAYVIDEO_FFMPEG" | string %]</td>
+				<td>
+					[% IF probe.ffmpeg %][% probe.ffmpeg | html %][% ELSE %][% "PLUGIN_PLAYVIDEO_NOT_FOUND" | string %][% END %]
+				</td>
+			</tr>
+			<tr>
+				<td class="prefHead">[% "PLUGIN_PLAYVIDEO_FFPROBE" | string %]</td>
+				<td>
+					[% IF probe.ffprobe %][% probe.ffprobe | html %][% ELSE %][% "PLUGIN_PLAYVIDEO_NOT_FOUND" | string %][% END %]
+				</td>
+			</tr>
+			<tr>
+				<td class="prefHead">[% "PLUGIN_PLAYVIDEO_SOURCE" | string %]</td>
+				<td>[% probe.sourceLabel | html %]</td>
+			</tr>
+			[% IF probe.version %]
+			<tr>
+				<td class="prefHead">[% "PLUGIN_PLAYVIDEO_FFPROBE_VERSION" | string %]</td>
+				<td>[% probe.version | html %]</td>
+			</tr>
+			[% END %]
+			[% IF probe.ffmpegVersion %]
+			<tr>
+				<td class="prefHead">[% "PLUGIN_PLAYVIDEO_FFMPEG_VERSION" | string %]</td>
+				<td>[% probe.ffmpegVersion | html %]</td>
+			</tr>
+			[% END %]
+			<tr>
+				<td class="prefHead">[% "PLUGIN_PLAYVIDEO_STATE" | string %]</td>
+				<td>
+					[% IF probe.ok %][% "PLUGIN_PLAYVIDEO_AVAILABLE" | string %][% ELSE %][% "PLUGIN_PLAYVIDEO_UNAVAILABLE" | string %][% END %]
+				</td>
+			</tr>
+			[% IF probe.error %]
+			<tr>
+				<td class="prefHead">[% "PLUGIN_PLAYVIDEO_ERROR" | string %]</td>
+				<td>[% probe.error | html %]</td>
+			</tr>
+			[% END %]
+		</table>
+	[% END %]
+
+	[% WRAPPER setting title="PLUGIN_PLAYVIDEO_FFMPEG_PLUGIN" desc="PLUGIN_PLAYVIDEO_FFMPEG_PLUGIN_DESC" %]
+		[% IF ffmpegPlugin.installed %]
+			<div>
+				[% IF ffmpegPlugin.enabled %]
+					[% "PLUGIN_PLAYVIDEO_DETECTED_ENABLED" | string %]
+				[% ELSE %]
+					[% "PLUGIN_PLAYVIDEO_DETECTED_DISABLED" | string %]
+				[% END %]
+			</div>
+			[% IF ffmpegPlugin.available %]
+				<div>
+					[% "PLUGIN_PLAYVIDEO_FFMPEG" | string %]:
+					[% IF ffmpegPlugin.ffmpeg %][% ffmpegPlugin.ffmpeg | html %][% ELSE %][% "PLUGIN_PLAYVIDEO_NOT_FOUND" | string %][% END %]
+				</div>
+				[% IF ffmpegPlugin.version %]
+				<div>
+					[% "PLUGIN_PLAYVIDEO_VERSION" | string %]: [% ffmpegPlugin.version | html %]
+				</div>
+				[% END %]
+			[% ELSE %]
+				<div>[% "PLUGIN_PLAYVIDEO_BINARY_UNAVAILABLE" | string %]</div>
+			[% END %]
+		[% ELSE %]
+			<div>[% "PLUGIN_PLAYVIDEO_NOT_DETECTED" | string %]</div>
+		[% END %]
+	[% END %]
+
+	[% WRAPPER setting title="PLUGIN_PLAYVIDEO_PATHS" desc="PLUGIN_PLAYVIDEO_PATHS_DESC" %]
+		<div>
+			<label for="ffmpeg" class="stdlabel">[% "PLUGIN_PLAYVIDEO_FFMPEG" | string %]</label>
+			<input type="text" class="stdedit" name="pref_ffmpeg" id="ffmpeg" value="[% prefs.pref_ffmpeg | html %]" size="60">
+		</div>
+		<div>
+			<label for="ffprobe" class="stdlabel">[% "PLUGIN_PLAYVIDEO_FFPROBE" | string %]</label>
+			<input type="text" class="stdedit" name="pref_ffprobe" id="ffprobe" value="[% prefs.pref_ffprobe | html %]" size="60">
+		</div>
+	[% END %]
+
+	[% WRAPPER setting title="PLUGIN_PLAYVIDEO_DECODERS" desc="PLUGIN_PLAYVIDEO_DECODERS_DESC" %]
+		<table class="prefs">
+			[% FOREACH decoder IN decoders %]
+			<tr>
+				<td class="prefHead">[% decoder.name | html %]</td>
+				<td>
+					[% IF decoder.available %][% decoder.path | html %][% ELSE %][% "PLUGIN_PLAYVIDEO_NOT_FOUND" | string %][% END %]
+				</td>
+			</tr>
+			[% END %]
+		</table>
+		<div class="prefDesc">[% "PLUGIN_PLAYVIDEO_DECODERS_HINT" | string %]</div>
+	[% END %]
+
+	[% WRAPPER setting title="PLUGIN_PLAYVIDEO_SCANNING" desc="PLUGIN_PLAYVIDEO_SCANNING_DESC" %]
+		<div>
+			<input type="checkbox" class="stdedit" name="pref_folderAsAlbum" id="folderAsAlbum" [% IF prefs.pref_folderAsAlbum %]checked="checked"[% END %]>
+			<label for="folderAsAlbum" class="stdlabel">[% "PLUGIN_PLAYVIDEO_FOLDER_AS_ALBUM" | string %]</label>
+		</div>
+		<div class="prefDesc">[% "PLUGIN_PLAYVIDEO_FOLDER_AS_ALBUM_DESC" | string %]</div>
+		<div>
+			<label for="probeTimeout" class="stdlabel">[% "PLUGIN_PLAYVIDEO_PROBE_TIMEOUT" | string %]</label>
+			<input type="text" class="stdedit sliderInput_1_120" name="pref_probeTimeout" id="probeTimeout" value="[% prefs.pref_probeTimeout | html %]" size="3">
+		</div>
+		<div class="prefDesc">[% "PLUGIN_PLAYVIDEO_PROBE_TIMEOUT_DESC" | string %]</div>
+	[% END %]
+
+	[% WRAPPER setting title="PLUGIN_PLAYVIDEO_MENUS" desc="PLUGIN_PLAYVIDEO_MENUS_DESC" %]
+		<div>
+			<input type="checkbox" class="stdedit" name="pref_showVideoInfo" id="showVideoInfo" [% IF prefs.pref_showVideoInfo %]checked="checked"[% END %]>
+			<label for="showVideoInfo" class="stdlabel">[% "PLUGIN_PLAYVIDEO_SHOW_VIDEO_INFO" | string %]</label>
+		</div>
+		<div>
+			<input type="checkbox" class="stdedit" name="pref_enableChapters" id="enableChapters" [% IF prefs.pref_enableChapters %]checked="checked"[% END %]>
+			<label for="enableChapters" class="stdlabel">[% "PLUGIN_PLAYVIDEO_ENABLE_CHAPTERS" | string %]</label>
+		</div>
+		<div class="prefDesc">[% "PLUGIN_PLAYVIDEO_CHAPTERS_NOTE" | string %]</div>
+	[% END %]
+
+	[% WRAPPER setting title="PLUGIN_PLAYVIDEO_PRIORITY" desc="PLUGIN_PLAYVIDEO_PRIORITY_DESC" %]
+		<div>
+			<input type="checkbox" class="stdedit" name="pref_preferExternalDecoders" id="preferExternalDecoders" [% IF prefs.pref_preferExternalDecoders %]checked="checked"[% END %]>
+			<label for="preferExternalDecoders" class="stdlabel">[% "PLUGIN_PLAYVIDEO_PREFER_EXTERNAL" | string %]</label>
+		</div>
+		<div class="prefDesc">[% "PLUGIN_PLAYVIDEO_PREFER_EXTERNAL_DESC" | string %]</div>
+	[% END %]
+
+[% PROCESS settings/footer.html %]

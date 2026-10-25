@@ -1,0 +1,7 @@
+ref
+.git
+t
+dist
+build
+tmp
+*.log

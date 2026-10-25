@@ -1,0 +1,5 @@
+#!/bin/sh
+# Test-only external AC3 decoder shim. It proves that LMS selected the
+# dedicated AC3 plugin profile instead of PlayVideo's ffmpeg fallback.
+echo used >> /tmp/playvideo-fake-ac3-used
+exec /usr/bin/ffmpeg "$@"

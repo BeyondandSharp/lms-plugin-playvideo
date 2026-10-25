@@ -1,0 +1,10 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+USER root
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ffmpeg sqlite3 procps curl ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY script/fixtures/fake-ac3 /usr/local/bin/playvideo-fake-ac3
+RUN chmod 755 /usr/local/bin/playvideo-fake-ac3

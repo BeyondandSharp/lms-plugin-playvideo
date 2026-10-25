@@ -1,0 +1,7 @@
+/ref/
+/dist/
+/build/
+/tmp/
+*.log
+*.bak
+.DS_Store

@@ -1,0 +1,284 @@
+# String file for the Lyrion Music Server PlayVideo plugin.
+#
+# Only English is required; the short Chinese translation mirrors
+# README.zh-CN.md. Other languages fall back to English.
+
+PLUGIN_PLAYVIDEO
+	EN	PlayVideo
+	ZH	PlayVideo
+
+PLUGIN_PLAYVIDEO_DESC
+	EN	Browse and play the audio track of video files; metadata via ffprobe, ffmpeg decoding fallback
+	ZH	浏览并播放视频文件中的音轨；使用 ffprobe 读取元数据，必要时用 ffmpeg 解码
+
+PLUGIN_PLAYVIDEO_SETTINGS
+	EN	PlayVideo
+	ZH	PlayVideo
+
+PLUGIN_PLAYVIDEO_SETTINGS_DESC
+	EN	Paths, scanning and menu options for PlayVideo.
+	ZH	PlayVideo 的路径、扫描和菜单选项。
+
+PLUGIN_PLAYVIDEO_SETTINGS_INTRO
+	EN	PlayVideo makes video files (MP4, MKV, WebM, AVI, ...) available in your music library using their audio track only. LMS renders no video; the video stream is ignored. ffmpeg and ffprobe must be installed on the server.
+	ZH	PlayVideo 仅使用视频文件（MP4、MKV、WebM、AVI 等）中的音轨，将其加入音乐库。LMS 不渲染视频，视频流会被忽略。服务器上必须安装 ffmpeg 和 ffprobe。
+
+PLUGIN_PLAYVIDEO_STATUS
+	EN	Status
+	ZH	状态
+
+PLUGIN_PLAYVIDEO_STATUS_DESC
+	EN	The binaries currently used for scanning and playback.
+	ZH	当前用于扫描和播放的程序。
+
+PLUGIN_PLAYVIDEO_STATE
+	EN	State
+	ZH	状态
+
+PLUGIN_PLAYVIDEO_SOURCE
+	EN	Source
+	ZH	来源
+
+PLUGIN_PLAYVIDEO_SOURCE_CONFIGURED
+	EN	Configured path
+	ZH	手动配置的路径
+
+PLUGIN_PLAYVIDEO_SOURCE_SYSTEM
+	EN	System PATH
+	ZH	系统 PATH
+
+PLUGIN_PLAYVIDEO_SOURCE_FFMPEG_PLUGIN
+	EN	FFmpeg plugin
+	ZH	FFmpeg 插件
+
+PLUGIN_PLAYVIDEO_SOURCE_NONE
+	EN	Not found
+	ZH	未找到
+
+PLUGIN_PLAYVIDEO_VERSION
+	EN	Version
+	ZH	版本
+
+PLUGIN_PLAYVIDEO_FFMPEG_VERSION
+	EN	ffmpeg version
+	ZH	ffmpeg 版本
+
+PLUGIN_PLAYVIDEO_FFPROBE_VERSION
+	EN	ffprobe version
+	ZH	ffprobe 版本
+
+PLUGIN_PLAYVIDEO_AVAILABLE
+	EN	Available
+	ZH	可用
+
+PLUGIN_PLAYVIDEO_UNAVAILABLE
+	EN	Unavailable
+	ZH	不可用
+
+PLUGIN_PLAYVIDEO_NOT_FOUND
+	EN	not found
+	ZH	未找到
+
+PLUGIN_PLAYVIDEO_NOT_DETECTED
+	EN	Not detected. Installing the optional FFmpeg plugin is recommended but not required.
+	ZH	未检测到。建议安装可选的 FFmpeg 插件，但这不是必需的。
+
+PLUGIN_PLAYVIDEO_DETECTED_ENABLED
+	EN	Detected and enabled.
+	ZH	已检测到并已启用。
+
+PLUGIN_PLAYVIDEO_DETECTED_DISABLED
+	EN	Detected, but the plugin is disabled.
+	ZH	已检测到，但插件未启用。
+
+PLUGIN_PLAYVIDEO_BINARY_UNAVAILABLE
+	EN	The plugin is loaded but could not resolve an ffmpeg binary.
+	ZH	插件已加载，但无法解析 ffmpeg 可执行文件。
+
+PLUGIN_PLAYVIDEO_FFMPEG_PLUGIN
+	EN	FFmpeg plugin
+	ZH	FFmpeg 插件
+
+PLUGIN_PLAYVIDEO_FFMPEG_PLUGIN_DESC
+	EN	Optional lms-plugin-ffmpeg integration. When installed, its configured ffmpeg/ffprobe binaries are preferred and its external decoder profiles are used for AC3, E-AC3, DTS and TrueHD.
+	ZH	可选的 lms-plugin-ffmpeg 集成。安装后优先使用其配置的 ffmpeg/ffprobe，并使用其外部解码配置处理 AC3、E-AC3、DTS 和 TrueHD。
+
+PLUGIN_PLAYVIDEO_FFMPEG
+	EN	ffmpeg executable
+	ZH	ffmpeg 可执行文件
+
+PLUGIN_PLAYVIDEO_FFPROBE
+	EN	ffprobe executable
+	ZH	ffprobe 可执行文件
+
+PLUGIN_PLAYVIDEO_PATHS
+	EN	Executable paths
+	ZH	可执行文件路径
+
+PLUGIN_PLAYVIDEO_PATHS_DESC
+	EN	Leave empty to use the binary from the FFmpeg plugin, the system PATH or the plugin environment. Absolute paths are recommended for Docker installations.
+	ZH	留空则使用 FFmpeg 插件、系统 PATH 或插件环境中的程序。Docker 安装建议填写绝对路径。
+
+PLUGIN_PLAYVIDEO_ERROR
+	EN	Error
+	ZH	错误
+
+PLUGIN_PLAYVIDEO_DECODERS
+	EN	Decoder binaries
+	ZH	解码程序
+
+PLUGIN_PLAYVIDEO_DECODERS_DESC
+	EN	LMS uses these helper programs to decode Opus, AAC, Vorbis, FLAC and MP3 audio from video containers. They are expected to be part of the LMS installation.
+	ZH	LMS 使用这些辅助程序解码视频容器中的 Opus、AAC、Vorbis、FLAC 和 MP3 音轨。它们通常随 LMS 一起安装。
+
+PLUGIN_PLAYVIDEO_DECODERS_HINT
+	EN	Missing helpers only affect the corresponding native profile. AC3, E-AC3, DTS and TrueHD are decoded by ffmpeg and do not need them.
+	ZH	缺少辅助程序只会影响对应的原生解码配置。AC3、E-AC3、DTS 和 TrueHD 由 ffmpeg 解码，不需要这些程序。
+
+PLUGIN_PLAYVIDEO_SCANNING
+	EN	Scanning and probing
+	ZH	扫描与探测
+
+PLUGIN_PLAYVIDEO_SCANNING_DESC
+	EN	How video files are read during a library scan. Changes take effect on the next rescan.
+	ZH	媒体库扫描时如何读取视频文件。更改会在下次重新扫描后生效。
+
+PLUGIN_PLAYVIDEO_FOLDER_AS_ALBUM
+	EN	Use the folder name as album
+	ZH	使用文件夹名作为专辑名
+
+PLUGIN_PLAYVIDEO_FOLDER_AS_ALBUM_DESC
+	EN	When a video file has no album tag, use the name of its parent folder. This groups one-movie-per-folder collections sensibly.
+	ZH	当视频文件没有专辑标签时，使用其所在文件夹的名称。适合每个文件夹一部影片的收藏。
+
+PLUGIN_PLAYVIDEO_PROBE_TIMEOUT
+	EN	Probe timeout (seconds)
+	ZH	探测超时（秒）
+
+PLUGIN_PLAYVIDEO_PROBE_TIMEOUT_DESC
+	EN	Maximum time ffprobe may take for one file. Slow network shares may need a larger value.
+	ZH	ffprobe 处理单个文件的最长时间。网络共享较慢时可适当增大。
+
+PLUGIN_PLAYVIDEO_MENUS
+	EN	Track information menus
+	ZH	曲目信息菜单
+
+PLUGIN_PLAYVIDEO_MENUS_DESC
+	EN	Additional entries in the track information menu for video files.
+	ZH	视频文件在曲目信息菜单中的附加条目。
+
+PLUGIN_PLAYVIDEO_SHOW_VIDEO_INFO
+	EN	Show video details
+	ZH	显示视频详情
+
+PLUGIN_PLAYVIDEO_ENABLE_CHAPTERS
+	EN	Show chapters
+	ZH	显示章节
+
+PLUGIN_PLAYVIDEO_CHAPTERS_NOTE
+	EN	Chapters are menu shortcuts for seeking inside the current video; they are not separate library tracks.
+	ZH	章节是视频内跳转的菜单快捷方式，不会作为独立的媒体库曲目出现。
+
+PLUGIN_PLAYVIDEO_PRIORITY
+	EN	Decoder priority
+	ZH	解码优先级
+
+PLUGIN_PLAYVIDEO_PRIORITY_DESC
+	EN	Controls which decoder is preferred for AC3, E-AC3, DTS and TrueHD audio found in video files.
+	ZH	控制视频文件中的 AC3、E-AC3、DTS 和 TrueHD 音轨优先使用哪种解码器。
+
+PLUGIN_PLAYVIDEO_PREFER_EXTERNAL
+	EN	Prefer external decoder plugins
+	ZH	优先使用外部解码插件
+
+PLUGIN_PLAYVIDEO_PREFER_EXTERNAL_DESC
+	EN	Try dedicated AC3/DTS/TrueHD decoder plugins before PlayVideo's ffmpeg fallback. Turn this off to always use ffmpeg for these codecs.
+	ZH	优先尝试专用的 AC3/DTS/TrueHD 解码插件，再回退到 PlayVideo 的 ffmpeg 方案。关闭后这些编码始终使用 ffmpeg。
+
+PLUGIN_PLAYVIDEO_VIDEO_DETAILS
+	EN	Video details
+	ZH	视频详情
+
+PLUGIN_PLAYVIDEO_CHAPTERS
+	EN	Chapters
+	ZH	章节
+
+PLUGIN_PLAYVIDEO_CONTAINER
+	EN	Container
+	ZH	容器
+
+PLUGIN_PLAYVIDEO_DURATION
+	EN	Duration
+	ZH	时长
+
+PLUGIN_PLAYVIDEO_VIDEO
+	EN	Video
+	ZH	视频
+
+PLUGIN_PLAYVIDEO_AUDIO
+	EN	Audio
+	ZH	音频
+
+PLUGIN_PLAYVIDEO_SIZE
+	EN	Size
+	ZH	大小
+
+PLUGIN_PLAYVIDEO_UNKNOWN
+	EN	unknown
+	ZH	未知
+
+PLUGIN_PLAYVIDEO_VIDEO_STREAM
+	EN	%s, %sx%s
+	ZH	%s，%sx%s
+
+PLUGIN_PLAYVIDEO_RESOLUTION
+	EN	%sx%s
+	ZH	%sx%s
+
+PLUGIN_PLAYVIDEO_SAMPLE_RATE_FMT
+	EN	%s Hz
+	ZH	%s Hz
+
+PLUGIN_PLAYVIDEO_CHANNELS_FORMAT
+	EN	%s ch
+	ZH	%s 声道
+
+PLUGIN_PLAYVIDEO_BITRATE_FORMAT
+	EN	%s kbps
+	ZH	%s kbps
+
+PLUGIN_PLAYVIDEO_CHAPTER_TITLE
+	EN	%s (%s)
+	ZH	%s（%s）
+
+PLUGIN_PLAYVIDEO_CHAPTER_NUMBER
+	EN	Chapter %s (%s)
+	ZH	第 %s 章（%s）
+
+PLUGIN_PLAYVIDEO_NO_CHAPTERS
+	EN	No chapters found in this file.
+	ZH	此文件中没有章节。
+
+PLUGIN_PLAYVIDEO_NO_VIDEOS
+	EN	No video files found. Add a media folder containing videos and run a scan.
+	ZH	未找到视频文件。请添加包含视频的媒体文件夹并执行扫描。
+
+PLUGIN_PLAYVIDEO_PROBE_FAILED
+	EN	Unable to read video information. Check that ffprobe is installed and the file is readable.
+	ZH	无法读取视频信息。请确认已安装 ffprobe 且文件可读。
+
+PLUGIN_PLAYVIDEO_NOT_LOCAL_FILE
+	EN	This is not a local video file.
+	ZH	这不是本地视频文件。
+
+PLUGIN_PLAYVIDEO_SEEK_STARTING
+	EN	Starting playback, then seeking to %s
+	ZH	正在开始播放，然后跳转到 %s
+
+PLUGIN_PLAYVIDEO_SEEK_DONE
+	EN	Seeked to %s
+	ZH	已跳转到 %s
+
+PLUGIN_PLAYVIDEO_SEEK_TIMEOUT
+	EN	Could not seek to %s: the video did not start in time
+	ZH	无法跳转到 %s：视频未能及时开始播放
