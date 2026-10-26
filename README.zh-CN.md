@@ -16,6 +16,10 @@ Lyrion Music Server（LMS）音乐库。插件会扫描这些文件，使用 `ff
 - 根据音频编码映射为 LMS 内容类型，使转码和播放器格式能力判断保持正常。
 - 视频容器中的 Opus、AAC、Vorbis、FLAC、MP3 使用 LMS 原生解码。
 - AC3、E-AC3、DTS、TrueHD 等 LMS 无法直接解码的编码使用 `ffmpeg` 回退解码。
+- 提供 FLAC、MP3、PCM、**AAC（ADTS）**、**Ogg Vorbis** 与 **Opus** 输出配置；
+  其中 AAC/Ogg/Opus 对所有内容类型都由 `ffmpeg` 解码并编码，支持最大码率与降采样。
+- 纯 Perl 的 `codec_capabilities` 能力声明（提供方 `playvideo`，优先级
+  `150`/`1`），CodecSwitch 等插件可在不探测 `ffmpeg` 的情况下协商解码能力。
 - 曲目信息菜单中提供 **视频详情** 与 **章节**。章节是跳转快捷方式，不是独立曲目。
 - 可选检测并与伴随项目 `lms-plugin-ffmpeg` 集成。
 - 提供 CLI/JSON-RPC 接口（`playvideo status|info|chapters`）用于诊断和自动化。
@@ -165,12 +169,24 @@ PlayVideo 曲目与普通音频曲目一致。LMS 只把音频流（`-vn -sn -dn
 | TrueHD | `vth` | 有外部 TrueHD 插件时优先，否则 ffmpeg |
 | 其他 | `vid` | ffmpeg 解码 |
 
-输出配置为 FLAC、MP3、PCM，同时覆盖本地（`F`）和远程（`R`）播放器。若播放器
-需要其他格式，LMS 会继续做常规的播放器端转码。支持跳转：`START`/`END`
-能力会让转换从指定位置重新开始。
+每种内容类型都有 FLAC、MP3、PCM、AAC（ADTS）、Ogg Vorbis 与 Opus 输出配置，
+同时覆盖本地（`F`）和远程（`R`）播放器（共 120 个配置，由
+`tools/gen-convert-conf.pl` 生成）。若播放器需要其他格式，LMS 会继续做常规的
+播放器端转码。支持跳转：`START`/`END` 能力会让转换从指定位置重新开始。
+
+| 输出 | 配置 | 路径 |
+| --- | --- | --- |
+| FLAC（`flc`） | 全部类型 | `vop`/`vaa`/`vvo`/`vfl`/`vmp` 原生解复用，其余由 `ffmpeg` 解码 |
+| MP3（`mp3`） | 全部类型 | `vop`/`vaa`/`vvo`/`vfl` 原生解复用，其余由 `ffmpeg` 解码 |
+| PCM（`pcm`） | 全部类型 | 五种原生编码解复用，其余由 `ffmpeg` 解码 |
+| AAC（`aac`） | 全部类型 | `ffmpeg` 解码 + `-c:a aac -f adts`（默认 192 kbit/s） |
+| Ogg Vorbis（`ogg`） | 全部类型 | `ffmpeg` 解码 + `-c:a libvorbis -f ogg`（默认 160 kbit/s） |
+| Opus（`ops`） | 全部类型 | `ffmpeg` 解码 + `-c:a libopus -f ogg`（默认 128 kbit/s） |
 
 对于 LMS 原生配置，`ffmpeg` 只负责解复用/复制，解码由 LMS 自带程序完成；
-对于回退配置，解码由 `ffmpeg` 完成。
+对于回退配置与 AAC/Ogg/Opus 配置，解码和编码由 `ffmpeg` 完成。AAC/Ogg/Opus
+配置声明降采样（`D`）与最大码率（`B`，`-b:a %Bk`）；LMS 未指定码率上限时使用
+上表的默认码率。
 
 ## 外部解码插件与优先级
 
@@ -181,6 +197,31 @@ AC3、E-AC3、DTS、TrueHD 可以由专用 LMS 插件（例如 AC3 插件或可�
 
 该设置只影响上述回退类型。Opus/AAC/Vorbis/FLAC/MP3 始终使用前面介绍的原生
 解码配置。
+
+### 编解码能力声明
+
+`Plugins::PlayVideo::Plugin->codec_capabilities()` 委托给纯 Perl 的
+`Plugins::PlayVideo::Types::codec_capabilities()`，返回静态描述，不探测
+`ffmpeg`，也不读取偏好设置：
+
+```perl
+{
+    provider => 'playvideo',
+    priority => 150,                      # 关闭外部解码器优先时为 1
+    decode   => [ { from => [ ...全部十种内容类型... ],
+                    to   => [ 'pcm', 'flc' ],
+                    scope => [ 'local', 'remote' ] } ],
+    convert  => [ { from => [ ...全部十种内容类型... ],
+                    to   => [ 'flc', 'mp3', 'pcm', 'aac', 'ogg', 'ops' ],
+                    scope => [ 'local', 'remote' ] } ],
+    bitrate  => [ 'mp3', 'aac', 'ogg', 'ops' ],
+}
+```
+
+`priority` 跟随 **优先使用外部解码插件** 设置。在 CodecSwitch 等编排插件使用的
+排序中数字越小越优先：`150` 让 PlayVideo 排在专用解码器（如 FFmpeg 插件
+`100`）之后，`1` 则让 PlayVideo 自己的 `ffmpeg` 配置优先。该声明是只读的，
+设置页会以状态行显示。
 
 ### 可选的 lms-plugin-ffmpeg 集成
 
@@ -220,6 +261,8 @@ FFmpeg 插件是可选的。只使用系统 `ffmpeg` 也能正常工作。
 
 设置页面的状态区域会显示解析到的二进制路径、版本和来源，是否安装了可选的
 FFmpeg 插件，以及 LMS 解码辅助程序（`sox`、`faad`、`flac`、`lame`）是否可用。
+只读的 **编解码能力** 区域会显示声明中的提供方、优先级、解码目标、输出格式与
+码率目标。它跟随 *优先使用外部解码插件* 设置，不新增任何偏好项。
 
 ## CLI / JSON-RPC
 
@@ -265,6 +308,8 @@ make install PLUGINS_DIR=/var/lib/squeezeboxserver/Plugins
 ```
 
 - `make test` 可在主机上运行；需要完整 LMS 的测试在未设置 `LMS_HOME` 时会跳过。
+  `t/40-conf.t` 检查 120 个生成的配置（包括 ADTS/Ogg 的真实 `ffmpeg` 签名），
+  `t/55-capabilities.t` 检查纯 Perl 能力声明与 `custom-convert.conf` 的一致性。
 - `make lint` 始终检查清单、字符串、设置模板和必需文件；设置 `LMS_HOME`
   指向 LMS 目录时还会对每个插件模块执行 `perl -c`。
 - `make docker-test` 调用 `script/docker-test.sh`，启动 LMS 9.0.0 与 9.1.1

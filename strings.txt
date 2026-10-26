@@ -243,6 +243,46 @@ PLUGIN_PLAYVIDEO_PREFER_EXTERNAL_DESC
 	ZH	优先尝试专用的 AC3/DTS/TrueHD 解码插件，再回退到 PlayVideo 的 ffmpeg 方案。关闭后这些编码始终使用 ffmpeg。
 	ZH_CN	优先尝试专用的 AC3/DTS/TrueHD 解码插件，再回退到 PlayVideo 的 ffmpeg 方案。关闭后这些编码始终使用 ffmpeg。
 
+PLUGIN_PLAYVIDEO_CAPABILITIES
+	EN	Codec capabilities
+	ZH	编解码能力
+	ZH_CN	编解码能力
+
+PLUGIN_PLAYVIDEO_CAPABILITIES_DESC
+	EN	Read-only summary of the conversion capabilities PlayVideo declares to other plugins.
+	ZH	PlayVideo 向其他插件声明的转换能力（只读）。
+	ZH_CN	PlayVideo 向其他插件声明的转换能力（只读）。
+
+PLUGIN_PLAYVIDEO_CAPABILITY_PROVIDER
+	EN	Provider
+	ZH	提供方
+	ZH_CN	提供方
+
+PLUGIN_PLAYVIDEO_CAPABILITY_PRIORITY
+	EN	Provider priority
+	ZH	提供方优先级
+	ZH_CN	提供方优先级
+
+PLUGIN_PLAYVIDEO_CAPABILITY_DECODE
+	EN	Decode targets
+	ZH	解码目标
+	ZH_CN	解码目标
+
+PLUGIN_PLAYVIDEO_CAPABILITY_OUTPUTS
+	EN	Output formats
+	ZH	输出格式
+	ZH_CN	输出格式
+
+PLUGIN_PLAYVIDEO_CAPABILITY_BITRATE
+	EN	Bitrate targets
+	ZH	码率目标
+	ZH_CN	码率目标
+
+PLUGIN_PLAYVIDEO_CAPABILITIES_HINT
+	EN	This declaration follows the "Prefer external decoder plugins" setting; in competing plugins' ordering lower numbers win. It is not a separate setting.
+	ZH	此声明跟随“优先使用外部解码插件”设置；在竞争插件的排序中数字越小优先级越高。它不是独立设置。
+	ZH_CN	此声明跟随“优先使用外部解码插件”设置；在竞争插件的排序中数字越小优先级越高。它不是独立设置。
+
 PLUGIN_PLAYVIDEO_VIDEO_DETAILS
 	EN	Video details
 	ZH	视频详情

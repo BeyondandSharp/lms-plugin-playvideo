@@ -20,7 +20,12 @@ my $root = repo_root();
 ok(!$INC{'Slim/Formats.pm'}, 'pure modules do not load Slim::Formats');
 ok(!$INC{'Slim/Player/TranscodingHelper.pm'}, 'pure modules do not load the transcoding helper');
 
-can_ok('Plugins::PlayVideo::Types', qw(VIDEO_TYPES is_video_type type_for_codec external_candidates all_video_types_regex));
+can_ok('Plugins::PlayVideo::Types', qw(VIDEO_TYPES is_video_type type_for_codec external_candidates all_video_types_regex codec_capabilities));
+
+my $capabilities = Plugins::PlayVideo::Types::codec_capabilities(1);
+is(ref $capabilities, 'HASH', 'codec_capabilities is usable without any LMS module');
+is($capabilities->{provider}, 'playvideo', 'codec capability provider is playvideo');
+ok(!$INC{'Slim/Utils/Prefs.pm'}, 'the capability declaration does not load the preferences module');
 can_ok('Plugins::PlayVideo::Tags', qw(build));
 can_ok('Plugins::PlayVideo::Probe', qw(probe chapters cover status clear_cache last_error));
 can_ok('Plugins::PlayVideo::Priority', qw(install uninstall is_installed));

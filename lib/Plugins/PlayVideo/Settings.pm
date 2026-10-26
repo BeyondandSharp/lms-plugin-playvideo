@@ -18,6 +18,7 @@ use Slim::Utils::Prefs;
 use Slim::Utils::Strings qw(string);
 
 use Plugins::PlayVideo::Probe;
+use Plugins::PlayVideo::Types;
 
 my $log  = logger('plugin.playvideo');
 my $prefs = preferences('plugin.playvideo');
@@ -63,8 +64,54 @@ sub beforeRender {
 	$params->{probe}         = _probeStatus();
 	$params->{ffmpegPlugin}  = _ffmpegPluginStatus();
 	$params->{decoders}      = _decoderStatus();
+	$params->{capabilities}  = _capabilityStatus();
 
 	return;
+}
+
+# Read-only summary of the declaration returned by
+# Plugins::PlayVideo::Types::codec_capabilities.  It is not a preference: the
+# value follows the preferExternalDecoders preference (no new setting).
+sub _capabilityStatus {
+	my $prefer = eval { $prefs->get('preferExternalDecoders') };
+	$prefer = 1 unless defined $prefer;
+
+	my $caps = eval { Plugins::PlayVideo::Types::codec_capabilities($prefer ? 1 : 0) };
+	$caps = {} unless ref $caps eq 'HASH';
+
+	my @outputs;
+	for my $edge (@{ $caps->{convert} || [] }) {
+		next unless ref $edge eq 'HASH' && ref $edge->{to} eq 'ARRAY';
+		push @outputs, @{ $edge->{to} };
+	}
+
+	my @decode;
+	for my $edge (@{ $caps->{decode} || [] }) {
+		next unless ref $edge eq 'HASH' && ref $edge->{to} eq 'ARRAY';
+		push @decode, @{ $edge->{to} };
+	}
+
+	my $bitrate = ref $caps->{bitrate} eq 'ARRAY' ? $caps->{bitrate} : [];
+
+	@outputs = _dedupe(@outputs);
+	@decode  = _dedupe(@decode);
+	my @bitrateTargets = _dedupe(@$bitrate);
+
+	return {
+		provider    => defined $caps->{provider} ? "$caps->{provider}" : '',
+		priority    => defined $caps->{priority} ? "$caps->{priority}" : '',
+		outputs     => [@outputs],
+		decode      => [@decode],
+		bitrate     => [@bitrateTargets],
+		outputsText => join(', ', @outputs),
+		bitrateText => join(', ', @bitrateTargets),
+		decodeText  => join(', ', @decode),
+	};
+}
+
+sub _dedupe {
+	my %seen;
+	return grep { defined $_ && !$seen{$_}++ } @_;
 }
 
 sub _probeStatus {

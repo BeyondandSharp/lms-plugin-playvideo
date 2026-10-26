@@ -82,10 +82,18 @@ for (my $index = 0; $index < @lines; $index++) {
 	};
 }
 
-is(scalar @blocks, 60, 'custom-convert.conf defines 60 profiles');
+is(scalar @blocks, 120, 'custom-convert.conf defines 120 profiles');
 
+# Content types with an LMS-native FLAC/MP3/PCM demux path, the content
+# types which only have ffmpeg decode fallback profiles for those outputs,
+# and the encoded outputs available for every content type.
 my %demux    = map { $_ => 1 } qw(vop vaa vvo vfl vmp);
 my %fallback = map { $_ => 1 } qw(vac vae vdt vth vid);
+
+my @allTypes       = qw(vid vop vaa vvo vfl vmp vac vae vdt vth);
+my @nativeOutputs  = qw(flc mp3 pcm);
+my @encodedOutputs = qw(aac ogg ops);
+my @allOutputs     = (@nativeOutputs, @encodedOutputs);
 
 my %seenBase;
 my %modes;
@@ -98,7 +106,7 @@ for my $block (@blocks) {
 
 	ok($demux{$block->{input}} || $fallback{$block->{input}},
 		"profile $label uses a PlayVideo content type");
-	ok($block->{output} =~ /^(?:flc|mp3|pcm)$/, "profile $label output format is supported");
+	ok($block->{output} =~ /^(?:flc|mp3|pcm|aac|ogg|ops)$/, "profile $label output format is supported");
 
 	like(
 		$block->{capabilities},
@@ -136,18 +144,22 @@ for my $block (@blocks) {
 	_check_placeholders($block, $label);
 }
 
-is(scalar @{ $modes{F} || [] }, 30, '30 file (F) profiles');
-is(scalar @{ $modes{R} || [] }, 30, '30 remote (R) profiles');
+is(scalar @{ $modes{F} || [] }, 60, '60 file (F) profiles');
+is(scalar @{ $modes{R} || [] }, 60, '60 remote (R) profiles');
 
 for my $base (sort keys %seenBase) {
 	is($seenBase{$base}, 2, "profile pair $base has exactly one F and one R profile");
 }
 
+# Every content type has all six output profiles: FLAC, MP3 and PCM (native
+# demux or ffmpeg fallback) plus the encoded AAC, Ogg Vorbis and Opus targets.
 for my $input (keys %demux, keys %fallback) {
-	for my $output (qw(flc mp3 pcm)) {
+	for my $output (@allOutputs) {
 		ok($seenBase{"$input $output"}, "profile $input $output is defined");
 	}
 }
+
+is(scalar keys %seenBase, 60, '60 distinct source/output profile pairs');
 
 # --- expected piped decoders ---------------------------------------------
 
@@ -178,6 +190,43 @@ for my $block (@blocks) {
 	}
 }
 
+# --- encoded AAC / Ogg Vorbis / Opus profiles ----------------------------
+
+# These are always decoded and encoded by ffmpeg: no LMS native decoder and
+# no "copy" passthrough.  Each target has a default bitrate which the LMS
+# Maximum Bitrate setting overrides through $BITRATE$.
+my %expectedEncoded = (
+	aac => {
+		fragments => ['-c:a aac', '-b:a 192k $BITRATE$', '-f adts'],
+		signature => qr/^\xff/,
+		label     => 'AAC (ADTS)',
+	},
+	ogg => {
+		fragments => ['-c:a libvorbis', '-b:a 160k $BITRATE$', '-f ogg'],
+		signature => qr/^OggS/,
+		label     => 'Ogg Vorbis',
+	},
+	ops => {
+		fragments => ['-c:a libopus', '-b:a 128k $BITRATE$', '-f ogg'],
+		signature => qr/^OggS/,
+		label     => 'Opus',
+	},
+);
+
+for my $block (@blocks) {
+	my $base = "$block->{input} $block->{output}";
+	my $spec = $expectedEncoded{$block->{output}} or next;
+
+	unlike($block->{command}, qr/-c:a copy/, "encoded profile $base does not copy audio");
+	like($block->{command}, qr/-ac \$OCHANNELS\$/, "encoded profile $base uses the output channel count");
+	like($block->{command}, qr/\$RESAMPLE\$/, "encoded profile $base supports downsampling");
+
+	for my $fragment (@{ $spec->{fragments} }) {
+		like($block->{command}, qr/\Q$fragment\E/,
+			"encoded profile $base command contains '$fragment'");
+	}
+}
+
 # --- fallback decoder profiles -------------------------------------------
 
 my %expectedDecode = (
@@ -189,11 +238,20 @@ my %expectedDecode = (
 for my $block (@blocks) {
 	my $base = "$block->{input} $block->{output}";
 	next unless $fallback{$block->{input}};
+	next unless $expectedDecode{$block->{output}};    # encoded outputs checked above
 
 	unlike($block->{command}, qr/-c:a copy/, "fallback profile $base does not copy audio");
 	like($block->{command}, qr/-ac \$OCHANNELS\$/, "fallback profile $base uses the output channel count");
 	like($block->{command}, qr/\Q$expectedDecode{$block->{output}}\E/,
 		"fallback profile $base uses the expected encoder");
+}
+
+# The fallback types also have no native demux profile for any output.
+for my $block (@blocks) {
+	next unless $fallback{$block->{input}};
+
+	like($block->{command}, qr/\[ffmpeg\]/,
+		"fallback profile $block->{input}->$block->{output} uses ffmpeg");
 }
 
 # --- D and B capabilities ------------------------------------------------
@@ -214,6 +272,15 @@ $expectB{'vvo mp3'} = 1;
 $expectB{'vfl mp3'} = 1;
 $expectB{'vmp mp3'} = 0;
 $expectB{"$_ mp3"} = 1 for keys %fallback;
+
+# The encoded AAC, Ogg Vorbis and Opus targets always support downsampling
+# and the LMS Maximum Bitrate setting (B).
+for my $input (@allTypes) {
+	for my $output (@encodedOutputs) {
+		$expectD{"$input $output"} = 1;
+		$expectB{"$input $output"} = 1;
+	}
+}
 
 for my $block (@blocks) {
 	my $base = "$block->{input} $block->{output}";
@@ -338,6 +405,66 @@ SKIP: {
 		}
 	}
 
+	# Encoded outputs: the complete ffmpeg command must decode the fixture
+	# and produce the real target container signature (ADTS or Ogg).
+	my %encodedFixture = (
+		vid => 'video_mp4',
+		vop => 'opus_mkv',
+		vaa => 'aac_mkv',
+		vvo => 'vorbis_mkv',
+		vfl => 'flac_mkv',
+		vmp => 'mp3_mkv',
+		vac => 'ac3_mkv',
+		vae => 'video_mp4',
+		vdt => 'dts_mkv',
+		vth => 'video_mp4',
+	);
+
+	for my $input (@allTypes) {
+		for my $output (@encodedOutputs) {
+			my $block = $commandFor{"$input $output"} or next;
+
+			my $file = File::Spec->catfile($shellDirectory, "encoded-$input-$output.bin");
+			my ($exit, $error) = _run_shell(
+				$block->{command},
+				$shellDirectory,
+				file   => $fixtures->{ $encodedFixture{$input} },
+				output => $file,
+			);
+
+			my $label = "$input->$output ($expectedEncoded{$output}{label})";
+			is($exit, 0, "encoded command $label executes") or diag($error);
+			ok(-s $file, "encoded command $label produces data");
+
+			if (-s $file) {
+				open my $handle, '<:raw', $file;
+				my $header = '';
+				read($handle, $header, 4);
+				close $handle;
+				like($header // '', $expectedEncoded{$output}{signature},
+					"encoded command $label produces the right container");
+			}
+		}
+	}
+
+	# The B capability ($BITRATE$) must be accepted by ffmpeg; LMS passes
+	# "-b:a <rate>k" here when a maximum bitrate is configured.
+	SKIP: {
+		my $block = $commandFor{'vid aac'} or skip 'no vid aac profile', 2;
+
+		my $file = File::Spec->catfile($shellDirectory, 'bitrate.bin');
+		my ($exit, $error) = _run_shell(
+			$block->{command},
+			$shellDirectory,
+			file    => $fixtures->{video_mp4},
+			output  => $file,
+			BITRATE => '-b:a 96k',
+		);
+
+		is($exit, 0, 'encoded command accepts the B bitrate capability') or diag($error);
+		ok(-s $file, 'encoded command with B produces data');
+	}
+
 	# Seeking placeholders must be positioned correctly for ffmpeg.
 	SKIP: {
 		my $block = $commandFor{'vop flc'} or skip 'no vop flc profile', 4;
@@ -435,7 +562,7 @@ sub _run_shell {
 		SAMPLERATE => '48000',
 		OCHANNELS => '2',
 		RESAMPLE  => '',
-		BITRATE   => '',
+		BITRATE   => defined $values{BITRATE} ? $values{BITRATE} : '',
 	);
 
 	for my $name (sort keys %substitutions) {

@@ -19,6 +19,7 @@ use base qw(Slim::Plugin::OPMLBased);
 use Plugins::PlayVideo::Formats;
 use Plugins::PlayVideo::Menus;
 use Plugins::PlayVideo::Priority;
+use Plugins::PlayVideo::Types;
 
 my $log = logger('plugin.playvideo');
 
@@ -33,6 +34,19 @@ my $ownFfmpegBinary;
 
 sub getDisplayName {
 	return 'PLUGIN_PLAYVIDEO';
+}
+
+# Thin delegation to Plugins::PlayVideo::Types::codec_capabilities, adding
+# the preferExternalDecoders preference so the declared provider priority
+# follows the user's setting.  The declaration itself is pure Perl and has
+# no side effects; this wrapper only reads the preference store.
+sub codec_capabilities {
+	my $class = shift;
+
+	my $prefer = eval { $prefs->get('preferExternalDecoders') };
+	$prefer = 1 unless defined $prefer;
+
+	return Plugins::PlayVideo::Types::codec_capabilities($prefer ? 1 : 0);
 }
 
 # Register the prefs and the custom format readers as early as possible.
@@ -238,5 +252,12 @@ I<Videos> node below I<My Music>.
 
 ffmpeg/ffprobe are used for scanning and as the decoding fallback for
 codecs which LMS cannot decode natively (AC3, E-AC3, DTS, TrueHD, ...).
+
+=head2 codec_capabilities()
+
+Thin delegation to L<Plugins::PlayVideo::Types/codec_capabilities>.  Reads
+the C<preferExternalDecoders> preference and leaves the pure declaration
+untouched (provider C<playvideo>, priority 150 when external decoders are
+preferred, 1 when they are not).
 
 =cut

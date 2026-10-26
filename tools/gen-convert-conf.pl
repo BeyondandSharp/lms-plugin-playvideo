@@ -11,7 +11,17 @@
 # Generator for custom-convert.conf.
 #
 # The file is generated so that the (large) set of conversion profiles
-# stays consistent.  Run this script from anywhere:
+# stays consistent.  It contains three groups:
+#
+#   * native profiles for Opus/AAC/Vorbis/FLAC/MP3: ffmpeg demuxes the
+#     container and pipes the elementary stream to LMS' own decoders
+#     (FLAC/MP3/PCM output),
+#   * ffmpeg decode fallback profiles for AC-3/E-AC-3/DTS/TrueHD/unknown
+#     codecs (FLAC/MP3/PCM output),
+#   * ffmpeg decode+encode profiles for every content type producing AAC
+#     (ADTS), Ogg Vorbis and Opus.
+#
+# Run this script from anywhere:
 #
 #     perl tools/gen-convert-conf.pl            # update in place
 #     perl tools/gen-convert-conf.pl --stdout   # print to stdout
@@ -188,6 +198,43 @@ my @FALLBACK = (
 for my $ct (qw(vac vae vdt vth vid)) {
 	for my $spec (@FALLBACK) {
 		my $command = $FFMPEG_PREFIX . ' ' . $spec->{decode};
+
+		_add_profiles($ct, $spec->{output}, $command, $spec->{caps});
+	}
+}
+
+# ---------------------------------------------------------------------------
+# Encoded audio outputs: AAC (ADTS), Ogg Vorbis and Opus.  LMS' own decoder
+# helpers do not produce these formats, so ffmpeg decodes the audio and
+# encodes it directly.  The profiles exist for every content type, including
+# the ones which also have a native FLAC/MP3/PCM path above: the native path
+# stays the default for FLAC/MP3/PCM, while these targets always go through
+# ffmpeg.  All three targets honour the Maximum Bitrate setting (B) and
+# downsampling (D); a sensible default bitrate is used when B is unset
+# (LMS replaces $BITRATE$ with "-b:a <rate>k").
+# ---------------------------------------------------------------------------
+
+my @ENCODE = (
+	{
+		output => 'aac',
+		encode => '-ac $OCHANNELS$ $RESAMPLE$ -c:a aac -b:a 192k $BITRATE$ -f adts -',
+		caps   => [qw(T U D_FFMPEG B_FFMPEG)],
+	},
+	{
+		output => 'ogg',
+		encode => '-ac $OCHANNELS$ $RESAMPLE$ -c:a libvorbis -b:a 160k $BITRATE$ -f ogg -',
+		caps   => [qw(T U D_FFMPEG B_FFMPEG)],
+	},
+	{
+		output => 'ops',
+		encode => '-ac $OCHANNELS$ $RESAMPLE$ -c:a libopus -b:a 128k $BITRATE$ -f ogg -',
+		caps   => [qw(T U D_FFMPEG B_FFMPEG)],
+	},
+);
+
+for my $ct (qw(vid vop vaa vvo vfl vmp vac vae vdt vth)) {
+	for my $spec (@ENCODE) {
+		my $command = $FFMPEG_PREFIX . ' ' . $spec->{encode};
 
 		_add_profiles($ct, $spec->{output}, $command, $spec->{caps});
 	}

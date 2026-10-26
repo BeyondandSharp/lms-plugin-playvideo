@@ -121,6 +121,11 @@ like($plugin, qr/Plugins::FFmpeg::Binary/, 'Plugin.pm prefers the FFmpeg plugin 
 like($plugin, qr/TranscodingHelper::binaries\{ffmpeg\}/, 'Plugin.pm publishes ffmpeg binary');
 like($plugin, qr/PLUGIN_PLAYVIDEO/, 'Plugin.pm has a display name token');
 like($plugin, qr/sub shutdownPlugin/, 'Plugin.pm implements shutdownPlugin');
+like($plugin, qr/sub\s+codec_capabilities\b/, 'Plugin.pm implements codec_capabilities');
+like($plugin, qr/Plugins::PlayVideo::Types::codec_capabilities/,
+	'Plugin.pm delegates codec_capabilities to Types.pm');
+like($plugin, qr/\$prefs->get\('preferExternalDecoders'\)/,
+	'Plugin.pm codec_capabilities reads the preferExternalDecoders preference');
 
 my @prefs = qw(
 	ffmpeg
@@ -150,6 +155,11 @@ like($settings, qr/sox/, 'Settings.pm checks sox');
 like($settings, qr/faad/, 'Settings.pm checks faad');
 like($settings, qr/flac/, 'Settings.pm checks flac');
 like($settings, qr/lame/, 'Settings.pm checks lame');
+like($settings, qr/Plugins::PlayVideo::Types::codec_capabilities/,
+	'Settings.pm reports the codec capability declaration');
+like($settings, qr/preferExternalDecoders/,
+	'Settings.pm derives the capability status from the existing preference');
+like($settings, qr/_capabilityStatus/, 'Settings.pm has a read-only capability status helper');
 
 my ($prefsSub) = $settings =~ /sub\s+prefs\s*\{(.*?)^\}/ms;
 my ($prefsBlock) = defined $prefsSub ? $prefsSub =~ /qw\((.*?)\)/s : ();
@@ -167,6 +177,17 @@ like($html, qr/WRAPPER settingSection/, 'settings.html uses settingSection (LMS 
 like($html, qr/WRAPPER settingGroup/, 'settings.html uses settingGroup (LMS 9 layout)');
 like($html, qr/class="prefTable"/, 'status/decoder tables use prefTable');
 unlike($html, qr/WRAPPER setting\s/, 'settings.html does not use the legacy setting wrapper');
+
+like($html, qr/PLUGIN_PLAYVIDEO_CAPABILITIES/, 'settings.html shows the codec capabilities group');
+like($html, qr/capabilities\.provider/, 'settings.html shows the capability provider');
+like($html, qr/capabilities\.priority/, 'settings.html shows the capability priority');
+like($html, qr/capabilities\.decodeText/, 'settings.html shows the decode targets');
+like($html, qr/capabilities\.outputsText/, 'settings.html shows the output formats');
+like($html, qr/capabilities\.bitrateText/, 'settings.html shows the bitrate targets');
+
+# The capability rows must not add a preference: the settings prefs
+# contract above already pins the exact preference set.
+unlike($html, qr/name="pref_(?:codec|capabilit)/, 'settings.html adds no capability preference');
 
 for my $pref (@prefs) {
 	like($html, qr/name="pref_\Q$pref\E"/, "settings.html renders pref $pref");
@@ -328,6 +349,15 @@ like($readme, qr/make test/, 'README.md documents make test');
 like($readme, qr/make docker-test/, 'README.md documents make docker-test');
 like($readme, qr/ref\//, 'README.md documents that ref/ is not committed');
 like($readme, qr/non-UTF-8/i, 'README.md documents the non-UTF-8 path caveat');
+
+for my $term (qw(AAC Opus Ogg)) {
+	like($readme, qr/\Q$term\E/i, "README.md documents the $term output");
+	like($readmeZh, qr/\Q$term\E/i, "README.zh-CN.md documents the $term output");
+}
+
+like($readme, qr/codec capabilities/i, 'README.md documents the codec capability declaration');
+like($readme, qr/150/, 'README.md documents the provider priority values');
+like($readmeZh, qr/编解码能力|codec capabilities/i, 'README.zh-CN.md documents the codec capability declaration');
 
 my $notices = slurp(file('THIRD_PARTY_NOTICES.md')) // '';
 

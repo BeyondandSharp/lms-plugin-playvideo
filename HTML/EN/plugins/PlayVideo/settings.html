@@ -45,6 +45,32 @@
 		</table>
 	[% END %]
 
+	[% WRAPPER settingGroup title="PLUGIN_PLAYVIDEO_CAPABILITIES" desc="PLUGIN_PLAYVIDEO_CAPABILITIES_DESC" %]
+		<table class="prefTable">
+			<tr>
+				<td>[% "PLUGIN_PLAYVIDEO_CAPABILITY_PROVIDER" | string %]</td>
+				<td>[% capabilities.provider | html %]</td>
+			</tr>
+			<tr>
+				<td>[% "PLUGIN_PLAYVIDEO_CAPABILITY_PRIORITY" | string %]</td>
+				<td>[% capabilities.priority | html %]</td>
+			</tr>
+			<tr>
+				<td>[% "PLUGIN_PLAYVIDEO_CAPABILITY_DECODE" | string %]</td>
+				<td>[% capabilities.decodeText | html %]</td>
+			</tr>
+			<tr>
+				<td>[% "PLUGIN_PLAYVIDEO_CAPABILITY_OUTPUTS" | string %]</td>
+				<td>[% capabilities.outputsText | html %]</td>
+			</tr>
+			<tr>
+				<td>[% "PLUGIN_PLAYVIDEO_CAPABILITY_BITRATE" | string %]</td>
+				<td>[% capabilities.bitrateText | html %]</td>
+			</tr>
+		</table>
+		<div class="prefDesc">[% "PLUGIN_PLAYVIDEO_CAPABILITIES_HINT" | string %]</div>
+	[% END %]
+
 	[% WRAPPER settingGroup title="PLUGIN_PLAYVIDEO_FFMPEG_PLUGIN" desc="PLUGIN_PLAYVIDEO_FFMPEG_PLUGIN_DESC" %]
 		[% IF ffmpegPlugin.installed %]
 			<table class="prefTable">
