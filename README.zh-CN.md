@@ -1,5 +1,7 @@
 # Lyrion Music Server 的 PlayVideo 插件
 
+[English README](README.md)
+
 **PlayVideo** 将本地视频文件（MP4、MKV、WebM、AVI、MPEG-TS 等）中的音轨加入
 Lyrion Music Server（LMS）音乐库。插件会扫描这些文件，使用 `ffprobe` 读取容器
 与音频元数据，使视频文件可以像普通曲目一样浏览、搜索、加入播放列表，并由 LMS

@@ -1,5 +1,7 @@
 # PlayVideo for Lyrion Music Server
 
+[中文说明](README.zh-CN.md)
+
 **PlayVideo** adds the audio tracks of local video files (MP4, MKV, WebM, AVI,
 MPEG-TS, ...) to your Lyrion Music Server (LMS) music library. It scans the
 files, reads the container/audio metadata with `ffprobe`, exposes the files in
