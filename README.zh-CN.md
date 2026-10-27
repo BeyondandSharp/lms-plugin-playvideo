@@ -1,5 +1,7 @@
 # Lyrion Music Server 的 PlayVideo 插件
 
+![GitHub Release](https://img.shields.io/github/v/release/BeyondandSharp/lms-plugin-playvideo)
+
 [English README](README.md)
 
 **PlayVideo** 将本地视频文件（MP4、MKV、WebM、AVI、MPEG-TS 等）中的音轨加入
